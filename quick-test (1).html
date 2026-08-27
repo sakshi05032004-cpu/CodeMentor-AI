@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-area { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        button { margin: 5px; padding: 10px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .result { margin: 10px 0; padding: 15px; background: #f8f9fa; border-radius: 4px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Fixed Responses</h1>
+    
+    <div class="test-area">
+        <h3>Test Messages:</h3>
+        <button onclick="testMessage('Give me a hint')">Give me a hint</button>
+        <button onclick="testMessage('What is the best approach?')">What's the best approach?</button>
+        <button onclick="testMessage('Walk me through this step by step')">Step by step</button>
+        <button onclick="testMessage('I am stuck')">I'm stuck</button>
+        <button onclick="testMessage('Explain this problem')">Explain this</button>
+        <button onclick="testMessage('Hello')">Hello</button>
+        
+        <div id="result" class="result">Click a button to test responses...</div>
+    </div>
+
+    <script>
+        // Simulate the content script logic for testing
+        function generateEnhancedFallbackResponse(lowerMessage, problemInfo, recentMessages) {
+            const problemTitle = problemInfo.title
+            const difficulty = problemInfo.difficulty
+            
+            console.log('Generating fallback for message:', lowerMessage)
+            
+            // More specific keyword matching with better prioritization
+            if (lowerMessage.includes("hint") || lowerMessage.includes("clue") || lowerMessage.includes("nudge")) {
+                return {
+                    message: `💡 **Hint for \${problemTitle}**: 
+
+For this \${difficulty} problem, think about:
+- **What data structure gives you O(1) lookup time?**
+- **How can you store values you've already seen?**
+- **What's the complement of each number you need to find?**
+
+Instead of checking every pair (O(n²)), can you check each number once? 🤔`,
+                    suggestions: ["I'm thinking hash map", "What's a complement?", "Show me the approach"]
+                }
+            } 
+            
+            if (lowerMessage.includes("approach") || lowerMessage.includes("strategy") || lowerMessage.includes("solve") || lowerMessage.includes("method")) {
+                return {
+                    message: `🎯 **Solution Approaches for \${problemTitle}**:
+
+**Approach 1: Brute Force** ⚡
+- Check every pair of numbers
+- Time: O(n²), Space: O(1)
+- Simple but slow for large inputs
+
+**Approach 2: Hash Map (Optimal)** 🏆
+- Store complement as you go
+- Time: O(n), Space: O(n)
+- Much faster for large arrays
+
+**Key insight**: For each number, check if (target - number) exists in your data structure.
+
+Which approach would you like to explore?`,
+                    suggestions: ["Explain the hash map approach", "Show me the code", "What's the time complexity?"]
+                }
+            }
+            
+            if (lowerMessage.includes("step") || lowerMessage.includes("guide") || lowerMessage.includes("walk") || lowerMessage.includes("through")) {
+                return {
+                    message: `📝 **Step-by-Step Solution for \${problemTitle}**:
+
+**Step 1**: Create an empty hash map
+**Step 2**: For each number in the array:
+   - Calculate: complement = target - current_number
+   - Check: Is complement already in hash map?
+   - If YES → Return [complement_index, current_index]
+   - If NO → Store current_number and its index in hash map
+**Step 3**: Continue until you find the pair
+
+**Example**: [2,7,11,15], target=9
+- num=2: complement=7, not found → store {2: 0}
+- num=7: complement=2, found at index 0 → return [0,1]
+
+Ready to implement this?`,
+                    suggestions: ["Yes, show me the code", "I need more explanation", "What about edge cases?"]
+                }
+            }
+            
+            if (lowerMessage.includes("stuck") || lowerMessage.includes("confused") || lowerMessage.includes("lost") || lowerMessage.includes("don't understand")) {
+                return {
+                    message: `🆘 **Let's solve \${problemTitle} together!**
+
+**What exactly is confusing you?**
+1. **Problem understanding**: Not sure what Two Sum means?
+2. **Algorithm choice**: Don't know which approach to use?
+3. **Implementation**: Know the approach but can't code it?
+4. **Debugging**: Code written but not working?
+
+**Quick clarification**: Find two numbers in the array that add up to the target. Return their indices (positions), not the numbers themselves.
+
+Which of these describes your situation best?`,
+                    suggestions: ["I don't understand the problem", "I need help choosing an approach", "I know what to do but can't code it"]
+                }
+            }
+            
+            if (lowerMessage.includes("explain") || lowerMessage.includes("understand") || lowerMessage.includes("what") || lowerMessage.includes("how")) {
+                return {
+                    message: `📚 **Understanding \${problemTitle}**:
+
+**The Problem**: 
+Given an array of numbers and a target, find TWO numbers that add up to the target. Return their positions (indices).
+
+**Example**: 
+- Array: [2, 7, 11, 15]  
+- Target: 9
+- Answer: [0, 1] (because 2 + 7 = 9, and they're at positions 0 and 1)
+
+**Key insight**: Instead of checking every possible pair, use a hash map to remember what numbers you've seen and where.
+
+What specific part needs more explanation?`,
+                    suggestions: ["Explain the hash map concept", "Show me with examples", "How does this avoid O(n²)?"]
+                }
+            }
+            
+            // For very general messages like "hello", "help me", etc.
+            if (lowerMessage.length < 10 || lowerMessage.includes("hello") || lowerMessage.includes("hi") || 
+                (lowerMessage.includes("help") && lowerMessage.length < 15)) {
+                return {
+                    message: `👋 **Ready to tackle \${problemTitle}?**
+
+This is a classic \${difficulty} problem that teaches important concepts!
+
+**I can help you with:**
+- 💡 **Hints** to guide your thinking
+- 🎯 **Solution approaches** (brute force vs optimal)
+- 📝 **Step-by-step walkthrough**
+- 🐛 **Debugging** your code
+
+**What would you like to start with?**`,
+                    suggestions: ["Give me a hint", "Show me the approach", "Walk through it step by step"]
+                }
+            }
+            
+            // For unrecognized but longer messages
+            return {
+                message: `🤔 **I want to help you with \${problemTitle}!**
+
+I didn't quite catch what you need. Could you be more specific?
+
+**Try asking:**
+- "Give me a hint"
+- "What's the best approach?"
+- "Walk me through this step by step"
+- "I'm stuck on [specific part]"
+- "Debug my code"
+
+**What exactly can I help you with?**`,
+                suggestions: ["Give me a hint", "Explain the approach", "I need debugging help"]
+            }
+        }
+
+        function testMessage(message) {
+            const problemInfo = {
+                title: "Two Sum",
+                difficulty: "Easy"
+            };
+            
+            const response = generateEnhancedFallbackResponse(message.toLowerCase(), problemInfo, []);
+            
+            document.getElementById('result').innerHTML = 
+                `🧪 **Testing Message**: "${message}"
+
+**Response**:
+${response.message}
+
+**Suggestions**: ${response.suggestions.join(', ')}`;
+        }
+    </script>
+</body>
+</html>

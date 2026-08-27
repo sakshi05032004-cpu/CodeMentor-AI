@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message Processing Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-button { margin: 5px; padding: 8px 12px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; white-space: pre-wrap; }
+        .success { background: #d4edda; border-left: 4px solid #28a745; }
+        .error { background: #f8d7da; border-left: 4px solid #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Message Processing Test</h1>
+    <p>Test different types of messages to see how the chatbot responds contextually:</p>
+    
+    <div class="test-section">
+        <h3>💡 Hint-related Messages</h3>
+        <button class="test-button" onclick="testMessage('Give me a hint')">Give me a hint</button>
+        <button class="test-button" onclick="testMessage('I need a clue')">I need a clue</button>
+        <button class="test-button" onclick="testMessage('Can you hint at the solution?')">Can you hint at the solution?</button>
+        <div id="hint-results" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🎯 Approach-related Messages</h3>
+        <button class="test-button" onclick="testMessage('What is the best approach?')">What is the best approach?</button>
+        <button class="test-button" onclick="testMessage('How should I solve this?')">How should I solve this?</button>
+        <button class="test-button" onclick="testMessage('What strategy should I use?')">What strategy should I use?</button>
+        <div id="approach-results" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Step-by-step Messages</h3>
+        <button class="test-button" onclick="testMessage('Walk me through this step by step')">Walk me through this step by step</button>
+        <button class="test-button" onclick="testMessage('Guide me through the solution')">Guide me through the solution</button>
+        <button class="test-button" onclick="testMessage('Can you show me the steps?')">Can you show me the steps?</button>
+        <div id="steps-results" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🆘 Help/Stuck Messages</h3>
+        <button class="test-button" onclick="testMessage('I am stuck')">I am stuck</button>
+        <button class="test-button" onclick="testMessage('I am confused about this problem')">I am confused about this problem</button>
+        <button class="test-button" onclick="testMessage('I need help with this')">I need help with this</button>
+        <div id="help-results" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📚 Explanation Messages</h3>
+        <button class="test-button" onclick="testMessage('Explain how this works')">Explain how this works</button>
+        <button class="test-button" onclick="testMessage('What does this problem mean?')">What does this problem mean?</button>
+        <button class="test-button" onclick="testMessage('How do I understand this?')">How do I understand this?</button>
+        <div id="explain-results" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🐛 Debug Messages</h3>
+        <button class="test-button" onclick="testMessage('My code has an error')">My code has an error</button>
+        <button class="test-button" onclick="testMessage('Something is wrong with my solution')">Something is wrong with my solution</button>
+        <button class="test-button" onclick="testMessage('Help me debug this')">Help me debug this</button>
+        <div id="debug-results" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>👋 General/Greeting Messages</h3>
+        <button class="test-button" onclick="testMessage('Hello')">Hello</button>
+        <button class="test-button" onclick="testMessage('Hi there')">Hi there</button>
+        <button class="test-button" onclick="testMessage('Help me')">Help me</button>
+        <div id="general-results" class="result"></div>
+    </div>
+
+    <script>
+        async function testMessage(message) {
+            const category = getCategoryFromMessage(message);
+            const resultDiv = document.getElementById(category + '-results');
+            
+            resultDiv.innerHTML = `🔄 Testing: "${message}"...`;
+            
+            try {
+                const response = await fetch('/api/chat/extension', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        problem: {
+                            title: "Two Sum",
+                            difficulty: "Easy",
+                            slug: "two-sum"
+                        },
+                        userId: "test-user",
+                        conversationHistory: []
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Message: "${message}"
+
+Response: ${data.response}
+
+Suggestions: ${data.suggestions || 'None'}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Error: ${data.error}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Network Error: ${error.message}`;
+            }
+        }
+
+        function getCategoryFromMessage(message) {
+            const lower = message.toLowerCase();
+            if (lower.includes('hint') || lower.includes('clue')) return 'hint';
+            if (lower.includes('approach') || lower.includes('solve') || lower.includes('strategy')) return 'approach';
+            if (lower.includes('step') || lower.includes('guide') || lower.includes('walk')) return 'steps';
+            if (lower.includes('stuck') || lower.includes('confused') || (lower.includes('help') && !lower.includes('debug'))) return 'help';
+            if (lower.includes('explain') || lower.includes('understand') || lower.includes('what') || lower.includes('how')) return 'explain';
+            if (lower.includes('debug') || lower.includes('error') || lower.includes('wrong')) return 'debug';
+            return 'general';
+        }
+
+        // Test all categories
+        function testAll() {
+            setTimeout(() => testMessage('Give me a hint'), 0);
+            setTimeout(() => testMessage('What is the best approach?'), 2000);
+            setTimeout(() => testMessage('Walk me through this step by step'), 4000);
+            setTimeout(() => testMessage('I am stuck'), 6000);
+            setTimeout(() => testMessage('Explain how this works'), 8000);
+            setTimeout(() => testMessage('My code has an error'), 10000);
+            setTimeout(() => testMessage('Hello'), 12000);
+        }
+    </script>
+
+    <div style="margin-top: 30px; text-align: center;">
+        <button onclick="testAll()" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 6px; font-size: 16px; cursor: pointer;">
+            🚀 Test All Categories
+        </button>
+    </div>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LeetCode AI Helper - Authentication</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: #f8fafc;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .auth-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .auth-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .auth-subtitle {
+      opacity: 0.8;
+      margin-bottom: 30px;
+      font-size: 16px;
+    }
+    
+    .auth-btn {
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border: none;
+      color: white;
+      padding: 14px 28px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    
+    .auth-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .success-message {
+      display: none;
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .success-message.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <h1 class="auth-title">🤖 LeetCode AI Helper</h1>
+    <p class="auth-subtitle">Sign in to sync your progress and get personalized AI assistance</p>
+    
+    <button class="auth-btn" onclick="redirectToApp()">
+      🚀 Continue to Web App
+    </button>
+    
+    <div class="success-message" id="successMessage">
+      <h3>✅ Authentication Successful!</h3>
+      <p>You can now close this tab and return to the extension.</p>
+    </div>
+  </div>
+
+  <script>
+    function redirectToApp() {
+      const WEB_APP_URL = "https://your-app.vercel.app" // Replace with your actual URL
+      window.location.href = `${WEB_APP_URL}?extension=true`
+    }
+    
+    // Check if we're returning from successful auth
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('success') === 'true') {
+      document.getElementById('successMessage').classList.add('show')
+      
+      // Send success message to extension
+      if (window.chrome && window.chrome.runtime) {
+        const user = {
+          id: urlParams.get('userId'),
+          name: urlParams.get('userName'),
+          email: urlParams.get('userEmail')
+        }
+        
+        window.chrome.runtime.sendMessage({
+          type: 'AUTH_SUCCESS',
+          user: user,
+          token: urlParams.get('token')
+        })
+      }
+    }
+  </script>
+</body>
+</html>
